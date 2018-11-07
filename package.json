@@ -1,0 +1,16 @@
+{
+  "name": "caixinha",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "mocha"
+  },
+  "author": "Michael Granados <michaelgranados@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "uuid": "^3.3.2",
+    "winston": "^3.1.0"
+  }
+}
