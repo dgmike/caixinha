@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "eslint": "eslint .",
+    "eslint:fix": "eslint --fix .",
     "test": "mocha"
   },
   "author": "Michael Granados <michaelgranados@gmail.com>",
@@ -19,6 +20,7 @@
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-mocha": "^5.2.0",
     "eslint-plugin-react": "^7.11.1",
     "mocha": "^5.2.0"
   }

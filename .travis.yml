@@ -4,4 +4,5 @@ node_js:
 before_script:
   - npm ci
 script:
+  - npm run eslint
   - npm test
