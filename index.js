@@ -4,6 +4,7 @@ const url = require('url');
 const util = require('util');
 const winston = require('winston');
 const uuidv4 = require('uuid/v4');
+const jsonBodyParser = require("body/json");
 
 const server = http.createServer();
 
@@ -15,6 +16,7 @@ const winstonLogger = winston.createLogger({
   ],
 });
 
+const jsonBody = util.promisify(jsonBodyParser);
 
 class Controller {
   static routes(req) {
@@ -22,6 +24,7 @@ class Controller {
       ['GET', /^\/$/, Controller.home],
       ['GET', /^\/api\/?$/, Controller.api],
       ['GET', /^\/api\/boxes\/?$/, Controller.apiBoxes],
+      ['POST', /^\/api\/boxes\/?$/, Controller.apiCreateBox],
       ['GET', /^\/api\/boxes\/(?<boxId>\d+)\/?$/, Controller.apiBox],
     ];
 
@@ -111,6 +114,16 @@ class Controller {
       },
       // TODO: populate attributes
     }));
+    res.end();
+  }
+
+  static async apiCreateBox({ req, res, logger }) {
+    const body = await jsonBody(req);
+
+    // TODO: validate
+    // TODO: write values
+    res.writeHead(200, { 'Content-Type': 'application/hal+json' });
+    res.write(JSON.stringify(body));
     res.end();
   }
 }
