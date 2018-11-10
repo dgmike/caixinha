@@ -3,7 +3,7 @@ const uuidv4 = require('uuid/v4');
 const { winstonLogger, createLogger, logResponse } = require('./logger');
 const { defineRoutes, router } = require('./router');
 
-function createServer(routes) {
+function createServer(routes, locals = {}) {
   const server = http.createServer();
   defineRoutes(routes);
 
@@ -14,7 +14,12 @@ function createServer(routes) {
 
     const route = router(req);
 
-    const context = { req, res, logger };
+    const context = {
+      req,
+      res,
+      logger,
+      locals,
+    };
 
     if (route) {
       req.params = route.params;
@@ -30,12 +35,17 @@ function createServer(routes) {
       promise
         .catch((err) => {
           logger.warn({
-            message: 'Internal server error',
+            message: context.res.statusMessage || http.STATUS_CODES[500],
             err: err.toString(),
             trace: err.stack,
           });
-          context.res.writeHead(500);
-          context.res.end();
+
+          if (!context.res.finished) {
+            context.res.setHeader('content-type', 'plain/text');
+            context.res.writeHead(500);
+            context.res.write(http.STATUS_CODES[500]);
+            context.res.end();
+          }
         })
         .finally(() => { logResponse(context); });
 

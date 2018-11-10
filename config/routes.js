@@ -2,8 +2,8 @@ const controller = require('../controller');
 
 module.exports = [
   ['GET', /^\/$/, controller.home],
-  ['GET', /^\/api\/?$/, controller.api.root],
-  ['GET', /^\/api\/boxes\/?$/, controller.api.boxes],
+  ['GET', /^\/api\/?$/, controller.api.rootAction],
+  ['GET', /^\/api\/boxes\/?$/, controller.api.listBoxes],
   ['POST', /^\/api\/boxes\/?$/, controller.api.createBox],
-  ['GET', /^\/api\/boxes\/(?<boxId>\d+)\/?$/, controller.api.box],
+  ['GET', /^\/api\/boxes\/(?<boxId>\d+)\/?$/, controller.api.fetchBox],
 ];
