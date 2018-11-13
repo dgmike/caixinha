@@ -1,39 +1,12 @@
 const jsonBodyParser = require('body/json');
 const util = require('util');
 const Ajv = require('ajv');
-
-const createBoxSchema = {
-  $id: '/schemas/createBoxSchema.json',
-  title: 'Box',
-  description: 'A box where notes are added',
-  type: 'object',
-  required: ['title', 'intentToFinishOn', 'status'],
-  additionalProperties: false,
-  properties: {
-    title: {
-      type: 'string',
-      minLength: 1,
-      maxLength: 200,
-      description: 'Title of box',
-      default: '',
-    },
-    intentToFinishOn: {
-      type: 'string',
-      description: 'When the box is intented to close',
-      format: 'date-time',
-    },
-    status: {
-      type: 'string',
-      enum: ['active', 'inactive'],
-      default: 'inactive',
-      description: 'Status of box',
-    },
-  },
-};
+const schema = require('../schema');
+const utils = require('../utils');
 
 const ajv = new Ajv({
   allErrors: true,
-  schemas: [createBoxSchema],
+  schemas: Object.values(schema),
 });
 
 const jsonBody = util.promisify(jsonBodyParser);
@@ -107,13 +80,7 @@ async function createBox({ req, res }) {
   const createBoxValidate = ajv.getSchema('/schemas/createBoxSchema.json');
   const valid = createBoxValidate(body);
   if (!valid) {
-    res.setHeader('content-type', 'application/vnd.error+json');
-    res.writeHead(422);
-    res.write(JSON.stringify({
-      body,
-      errors: createBoxValidate.errors,
-    }));
-    res.end();
+    utils.sendErrorJson(res, body, createBoxValidate.errors);
     return;
   }
 

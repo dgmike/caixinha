@@ -1,0 +1,28 @@
+{
+    "$id": "/schemas/createBoxSchema.json",
+    "title": "Box",
+    "description": "A box where notes are added",
+    "type": "object",
+    "required": ["title", "intentToFinishOn", "status"],
+    "additionalProperties": false,
+    "properties": {
+        "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Title of box",
+            "default": ""
+        },
+        "intentToFinishOn": {
+            "type": "string",
+            "description": "When the box is intented to close",
+            "format": "date-time"
+        },
+        "status": {
+            "type": "string",
+            "enum": ["active", "inactive"],
+            "default": "inactive",
+            "description": "Status of box"
+        }
+    }
+}
