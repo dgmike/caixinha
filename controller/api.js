@@ -6,6 +6,8 @@ const utils = require('../utils');
 
 const ajv = new Ajv({
   allErrors: true,
+  errorDataPath: 'property',
+  jsonPointers: true,
   schemas: Object.values(schema),
 });
 
@@ -23,9 +25,6 @@ async function rootAction({ res }) {
 }
 
 async function listBoxes({ res, locals }) {
-  await locals.db.model('box').create({
-    title: `Meu titulo ${new Date().toISOString()}`,
-  });
   const boxResult = await locals.db.model('box').findAll();
 
   res.writeHead(200, { 'Content-Type': 'application/hal+json' });
@@ -55,7 +54,7 @@ async function fetchBox({ req, res }) {
   res.end();
 }
 
-async function createBox({ req, res }) {
+async function createBox({ req, res, locals }) {
   if (!(req.headers['content-type'] || '').match(/application\/([a-z0-9_.-]+)?json/)) {
     res.writeHead(415);
     res.end();
@@ -76,17 +75,21 @@ async function createBox({ req, res }) {
     throw e;
   }
 
-  // TODO: validate
   const createBoxValidate = ajv.getSchema('/schemas/createBoxSchema.json');
   const valid = createBoxValidate(body);
   if (!valid) {
-    utils.sendErrorJson(res, body, createBoxValidate.errors);
+    utils.sendErrorJson({
+      res,
+      body,
+      errors: utils.formatSchemaErrors(createBoxValidate.errors),
+    });
     return;
   }
 
-  // TODO: write values
+  const result = await locals.db.model('box').create(body);
+
   res.writeHead(200, { 'Content-Type': 'application/hal+json' });
-  res.write(JSON.stringify(body));
+  res.write(JSON.stringify(result.representOne()));
   res.end();
 }
 
