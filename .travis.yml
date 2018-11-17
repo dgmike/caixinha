@@ -2,7 +2,7 @@ language: node_js
 node_js:
   - "11"
 before_script:
-  - npm ci
+  - npm install
 script:
   - npm run eslint
   - npm test
