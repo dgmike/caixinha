@@ -11,12 +11,18 @@ module.exports = async (db) => {
 
   boxModel.prototype.representOne = function () {
     const represent = this.toJSON();
-    represent._links = {
-      self: `/api/boxes/${this.get('id')}`,
-      boxes: '/api/boxes',
-      api: '/api/api',
-    };
+    represent._links = this.representLinks()._links;
     return represent;
+  };
+
+  boxModel.prototype.representLinks = function () {
+    return {
+      _links: {
+        self: `/api/boxes/${this.get('id')}`,
+        boxes: '/api/boxes',
+        api: '/api/api',
+      },
+    };
   };
 
   return db;

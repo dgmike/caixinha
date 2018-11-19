@@ -25,7 +25,9 @@ async function rootAction({ res }) {
 }
 
 async function listBoxes({ res, locals }) {
-  const boxResult = await locals.db.model('box').findAll();
+  const boxResult = await locals.db.model('box').findAll({
+    attributes: ['id', 'title'],
+  });
 
   res.writeHead(200, { 'Content-Type': 'application/hal+json' });
   res.write(JSON.stringify({
@@ -35,22 +37,33 @@ async function listBoxes({ res, locals }) {
       box: { href: '/api/boxes/:boxId', templated: true },
     },
     _embedded: {
-      boxes: boxResult.map(boxItem => boxItem.toJSON()),
+      boxes: boxResult.map(boxItem => boxItem.representOne()),
     },
   }));
   res.end();
 }
 
-async function fetchBox({ req, res }) {
+async function fetchBox({ req, res, locals }) {
+  let boxResult;
+
+  try {
+    boxResult = await locals.db.model('box').find({
+      where: {
+        id: req.params.boxId,
+      },
+    });
+  } catch (err) {
+    throw err;
+  }
+
+  if (!boxResult) {
+    res.writeHead(404);
+    res.end();
+    return;
+  }
+
   res.writeHead(200, { 'Content-Type': 'application/hal+json' });
-  res.write(JSON.stringify({
-    _links: {
-      api: { href: '/api' },
-      boxes: { href: '/api/boxes' },
-      self: { href: `/api/boxes/${req.params.boxId}` },
-    },
-    // TODO: populate attributes
-  }));
+  res.write(JSON.stringify(boxResult.representOne()));
   res.end();
 }
 
@@ -77,6 +90,7 @@ async function createBox({ req, res, locals }) {
 
   const createBoxValidate = ajv.getSchema('/schemas/createBoxSchema.json');
   const valid = createBoxValidate(body);
+
   if (!valid) {
     utils.sendErrorJson({
       res,
@@ -86,7 +100,13 @@ async function createBox({ req, res, locals }) {
     return;
   }
 
-  const result = await locals.db.model('box').create(body);
+  let result;
+
+  try {
+    result = await locals.db.model('box').create(body);
+  } catch (err) {
+    throw err;
+  }
 
   res.writeHead(200, { 'Content-Type': 'application/hal+json' });
   res.write(JSON.stringify(result.representOne()));
