@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const api = require('./api');
+const utils = require('./utils');
 
 async function home({ res }) {
   const page = fs.readFileSync(`${__dirname}/../templates/index.html`);
@@ -29,4 +30,5 @@ module.exports = {
   home,
   schema,
   api,
+  utils,
 };
