@@ -1,5 +1,3 @@
-const jsonBodyParser = require('body/json');
-const util = require('util');
 const Ajv = require('ajv');
 const schema = require('../schema');
 const utils = require('../utils');
@@ -10,8 +8,6 @@ const ajv = new Ajv({
   jsonPointers: true,
   schemas: Object.values(schema),
 });
-
-const jsonBody = util.promisify(jsonBodyParser);
 
 async function rootAction({ res }) {
   res.writeHead(200, { 'Content-Type': 'application/hal+json' });
@@ -68,30 +64,10 @@ async function fetchBox({ req, res, locals }) {
 }
 
 async function createBox({ req, res, locals }) {
-  if (!(req.headers['content-type'] || '').match(/application\/([a-z0-9_.-]+)?json/)) {
-    res.writeHead(415);
-    res.end();
-    return;
-  }
-
-  let body;
-
-  try {
-    body = await jsonBody(req);
-  } catch (e) {
-    res.setHeader('content-type', 'application/vnd.error+json');
-    res.writeHead(422);
-    res.write(JSON.stringify({
-      message: 'Invalid json body',
-    }));
-    res.end();
-    throw e;
-  }
-
+  const body = req.jsonBody;
   const createBoxValidate = ajv.getSchema('/schemas/createBoxSchema.json');
-  const valid = createBoxValidate(body);
 
-  if (!valid) {
+  if (!createBoxValidate(body)) {
     utils.sendErrorJson({
       res,
       body,
@@ -113,9 +89,44 @@ async function createBox({ req, res, locals }) {
   res.end();
 }
 
+async function updateBox({ req, res, locals }) {
+  const body = req.jsonBody;
+  const updateBoxValidate = ajv.getSchema('/schemas/updateBoxSchema.json');
+
+  if (!updateBoxValidate(body)) {
+    utils.sendErrorJson({
+      res,
+      body,
+      errors: utils.formatSchemaErrors(updateBoxValidate.errors),
+    });
+    return;
+  }
+
+  let result;
+
+  try {
+    result = await locals.db.model('box')
+      .update(
+        {
+          where: {
+            id: req.params.boxId,
+          },
+        },
+        body,
+      );
+  } catch (err) {
+    throw err;
+  }
+
+  res.writeHead(200, { 'Content-Type': 'application/hal+json' });
+  res.write(JSON.stringify(result.representOne()));
+  res.end();
+}
+
 module.exports = {
   rootAction,
   listBoxes,
   fetchBox,
   createBox,
+  updateBox,
 };
