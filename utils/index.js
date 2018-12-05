@@ -14,7 +14,6 @@ function sendErrorJson({
     // eslint-disable-next-line no-underscore-dangle
     content._embedded = { errors };
     content.total = errors.length;
-
   }
 
   res.end(JSON.stringify(content));

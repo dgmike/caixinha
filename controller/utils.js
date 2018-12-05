@@ -57,7 +57,7 @@ function validateSchema(schemaName) {
       });
       throw new Error('Invalid body');
     }
-  }
+  };
 }
 
 module.exports = {
