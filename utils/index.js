@@ -5,12 +5,18 @@ function sendErrorJson({
   errors,
   statusCode = 422,
 }) {
-  res.writeHead(422, { 'content-type': 'application/vnd.error+json' });
+  res.writeHead(statusCode, { 'content-type': 'application/vnd.error+json' });
   const content = {
     message: http.STATUS_CODES[statusCode],
-    total: errors.length,
-    _embedded: { errors },
   };
+
+  if (errors) {
+    // eslint-disable-next-line no-underscore-dangle
+    content._embedded = { errors };
+    content.total = errors.length;
+
+  }
+
   res.end(JSON.stringify(content));
 }
 

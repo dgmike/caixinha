@@ -1,13 +1,4 @@
-const Ajv = require('ajv');
-const schema = require('../schema');
 const utils = require('../utils');
-
-const ajv = new Ajv({
-  allErrors: true,
-  errorDataPath: 'property',
-  jsonPointers: true,
-  schemas: Object.values(schema),
-});
 
 async function rootAction({ res }) {
   res.writeHead(200, { 'Content-Type': 'application/hal+json' });
@@ -65,16 +56,6 @@ async function fetchBox({ req, res, locals }) {
 
 async function createBox({ req, res, locals }) {
   const body = req.jsonBody;
-  const createBoxValidate = ajv.getSchema('/schemas/createBoxSchema.json');
-
-  if (!createBoxValidate(body)) {
-    utils.sendErrorJson({
-      res,
-      body,
-      errors: utils.formatSchemaErrors(createBoxValidate.errors),
-    });
-    return;
-  }
 
   let result;
 
@@ -91,29 +72,24 @@ async function createBox({ req, res, locals }) {
 
 async function updateBox({ req, res, locals }) {
   const body = req.jsonBody;
-  const updateBoxValidate = ajv.getSchema('/schemas/updateBoxSchema.json');
-
-  if (!updateBoxValidate(body)) {
-    utils.sendErrorJson({
-      res,
-      body,
-      errors: utils.formatSchemaErrors(updateBoxValidate.errors),
-    });
-    return;
-  }
 
   let result;
 
   try {
-    result = await locals.db.model('box')
-      .update(
-        {
-          where: {
-            id: req.params.boxId,
-          },
+    const item = await locals.db.model('box').findOne({ where: { id: req.params.boxId } });
+    if (!item) {
+      utils.sendErrorJson({ res, statusCode: 404 });
+      throw new Error('Resource not found');
+    }
+
+    result = await item.update(
+      body,
+      {
+        where: {
+          id: req.params.boxId,
         },
-        body,
-      );
+      },
+    );
   } catch (err) {
     throw err;
   }

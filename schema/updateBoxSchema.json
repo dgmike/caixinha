@@ -1,0 +1,31 @@
+{
+    "$id": "/schemas/updateBoxSchema.json",
+    "title": "Box",
+    "description": "A box where notes are added",
+    "type": "object",
+    "required": [],
+    "additionalProperties": false,
+    "properties": {
+        "title": {
+            "title": "title",
+            "description": "Title of box",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "default": ""
+        },
+        "intentToFinishOn": {
+            "title": "intentToFinishOn",
+            "description": "When the box is intented to close",
+            "type": "string",
+            "format": "date-time"
+        },
+        "status": {
+            "title": "status",
+            "description": "Status of box",
+            "type": "string",
+            "enum": ["active", "inactive"],
+            "default": "inactive"
+        }
+    }
+}
